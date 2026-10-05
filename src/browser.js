@@ -117,7 +117,15 @@ export async function openSession(base, { headless = true, startPath = '/', time
 //     has ended too, the window waits for you to sign in (bot checks are left to you, never automated).
 // CANVAS_MCP_RENEW=hidden skips step 2 (then run `login` yourself when the session expires).
 //  `hiddenWorks: false` (remembered after the first failure) skips step 1, which saves ~20 s.
-export async function renewSession(base, { loginPath, onLoginPath, hiddenWorks, onHiddenResult = () => {}, log = () => {} } = {}) {
+//  A tool call waits at most `waitMs` for the window (AI apps time out around 60 s). If you are
+//  still typing your password, the call reports that and the window stays open; once you finish,
+//  the session is saved and the next request just works. Only one window is ever open at a time.
+let signInWindow = null;
+const SIGN_IN_HINT = 'A Canvas sign-in window is open. Sign in there, then ask again.';
+
+export async function renewSession(base, { loginPath, onLoginPath, hiddenWorks, onHiddenResult = () => {}, log = () => {}, waitMs = 40000 } = {}) {
+  if (!loadCookies().length) throw new Error('Not signed in to Canvas yet. Run: npx canvas-session-mcp setup');
+  if (signInWindow) return waitFor(signInWindow, waitMs);
   if (hiddenWorks !== false) {
     try { const s = await openSession(base, { headless: true, onLoginPath }); onHiddenResult(true); return s; }
     catch { onHiddenResult(false); }
@@ -126,9 +134,19 @@ export async function renewSession(base, { loginPath, onLoginPath, hiddenWorks, 
     throw new Error('Your Canvas session has expired. Run: npx canvas-session-mcp login');
   }
   log('Canvas session expired; opening a sign-in window…');
+  signInWindow = openSession(base, { headless: false, startPath: loginPath || '/', timeoutMs: 600000, onLoginPath })
+    .finally(() => { signInWindow = null; });
+  signInWindow.catch(() => {});   // the outcome is reported by waitFor, or by the next call
+  return waitFor(signInWindow, waitMs);
+}
+
+async function waitFor(win, ms) {
+  let timer;
+  const late = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(SIGN_IN_HINT)), ms); });
   try {
-    return await openSession(base, { headless: false, startPath: loginPath || '/', timeoutMs: 180000, onLoginPath });
+    return await Promise.race([win, late]);
   } catch (e) {
-    throw new Error(`Your Canvas session has expired and the sign-in window was not completed (${e.message}). Run: npx canvas-session-mcp login`);
-  }
+    if (e.message === SIGN_IN_HINT) throw e;
+    throw new Error(`Canvas sign-in was not completed (${e.message}). Run: npx canvas-session-mcp login`);
+  } finally { clearTimeout(timer); }
 }

@@ -155,6 +155,13 @@ test('saved cookies are used without opening a browser', async () => {
   assert.equal(opens, 1);
 });
 
+test('never signed in: fails at once with a hint instead of opening windows', async () => {
+  const { renewSession } = await import('../src/browser.js');
+  const t0 = Date.now();
+  await assert.rejects(renewSession('https://canvas.example.edu'), /setup/);
+  assert.ok(Date.now() - t0 < 1000);
+});
+
 test('text helpers', () => {
   assert.equal(htmlToText('<p>a</p><img src="x"><p>b</p>'), 'a\n\nb');
   assert.deepEqual(fileIdsIn('<a href="/courses/1/files/12?wrap=1">x</a><a href="/files/12/download">y</a>'), ['12']);
