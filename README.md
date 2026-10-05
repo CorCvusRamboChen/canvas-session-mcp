@@ -70,6 +70,7 @@ Canvas and most school SSOs use *session* cookies that a browser forgets when it
 | Situation | What happens | Measured |
 |---|---|---|
 | Normal use | Saved cookies are sent straight to Canvas; no browser starts | 0.7 s |
+| How long saved cookies last | Checked every 15 min with no renewal: still accepted after **2 h 6 min** (the check itself counts as use; longer idle gaps not measured yet) | ≥ 2 h |
 | Canvas session expired, SSO still remembers you | A sign-in window opens at your school's SSO, completes **without typing anything**, and closes | 4–10 s |
 | SSO session expired too (e.g. computer off for days) | The window stays open for you to sign in, as in any browser | — |
 | Hidden (headless) renewal | Works where SSO bounces straight back. At this university a Cloudflare bot check stops it, so the server switches to the visible window and remembers that. **Bot checks are never automated or bypassed.** | — |
@@ -164,6 +165,7 @@ Canvas 和大部分学校的 SSO 用的是“会话 cookie”，浏览器一关�
 | 情况 | 会发生什么 | 实测 |
 |---|---|---|
 | 平时使用 | 直接带着保存的 cookie 访问 Canvas，不启动浏览器 | 0.7 秒 |
+| 保存的 cookie 能用多久 | 每 15 分钟检查一次、全程不续期，**2 小时 6 分钟后仍然有效**（检查本身也算使用；长时间完全闲置的情况还没测） | ≥ 2 小时 |
 | Canvas 会话过期，SSO 还记得你 | 弹出一个登录窗口去学校 SSO，**什么都不用输**就自动完成并关闭 | 4–10 秒 |
 | SSO 也过期了（比如关机好几天） | 窗口会留着，等你像平时一样登录 | — |
 | 无界面续期 | SSO 能直接跳回来的学校可以用。这所大学会被 Cloudflare 人机验证拦下，服务器会自动改用可见窗口，并记住这个选择。**本工具从不自动完成或绕过任何人机验证。** | — |
