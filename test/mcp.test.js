@@ -23,7 +23,7 @@ test('MCP server lists read-only tools and reports a missing login as a tool err
     assert.ok(tools.find((t) => t.name === 'canvas_read_file').inputSchema.required.includes('file_id'));
     const r = await client.callTool({ name: 'canvas_whoami', arguments: {} });
     assert.equal(r.isError, true);
-    assert.match(r.content[0].text, /login/);
+    assert.match(r.content[0].text, /main.tar.gz setup/);   // a command people can paste as is
   } finally {
     await client.close();
   }

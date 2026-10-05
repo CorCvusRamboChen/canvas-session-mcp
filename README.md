@@ -78,7 +78,7 @@ Prefer no pop-ups? Set `CANVAS_MCP_RENEW=hidden` and run `login` yourself when `
 
 ### How it was verified
 
-- **17 automated tests** run against a fake Canvas server and through a real MCP client: pagination, cookie refresh, hidden-Files fallback, duplicate uploads, setup writing each app's config, and a check that only `GET` requests are ever sent.
+- **18 automated tests** run against a fake Canvas server and through a real MCP client: pagination, cookie refresh, hidden-Files fallback, duplicate uploads, setup writing each app's config, and a check that only `GET` requests are ever sent.
 - **60/60 live checks** on a real account through a real MCP client (`node scripts/verify-live.mjs`): 13 courses; modules, files, assignments and pages in each; announcements, grades, inbox, calendar, upcoming work, and a lecture PDF read as text.
 - **Session expiry simulated** by deleting the Canvas session and SSO session cookies separately, with results as in the table above.
 - **Setup tested** against a throwaway home folder: Claude Desktop, Codex and Cursor configs written correctly, existing servers kept, backups made.
@@ -172,7 +172,7 @@ Canvas 和大部分学校的 SSO 用的是“会话 cookie”，浏览器一关�
 
 ### 验证记录
 
-- **17 个自动测试**：用假的 Canvas 服务器加真实的 MCP 客户端，覆盖分页、cookie 续期、Files 页隐藏时的兜底、重复上传、setup 写入各个 AI 应用的配置，并确认只会发 `GET` 请求。
+- **18 个自动测试**：用假的 Canvas 服务器加真实的 MCP 客户端，覆盖分页、cookie 续期、Files 页隐藏时的兜底、重复上传、setup 写入各个 AI 应用的配置，并确认只会发 `GET` 请求。
 - **真机 60/60 项检查**：用真实账号、通过真实的 MCP 客户端运行（`node scripts/verify-live.mjs`）。覆盖 13 门课，每门课都查了模块、文件、作业和页面；还有公告、成绩、站内信、日历、近期待办，以及把讲义 PDF 转成文字。
 - **模拟会话过期**：分别删掉 Canvas 的会话 cookie 和 SSO 的会话 cookie，结果见上表。
 - **setup 测试**：在一个临时的用户目录里运行，Claude Desktop、Codex、Cursor 的配置都写对了，原有的服务器配置保留，也做了备份。

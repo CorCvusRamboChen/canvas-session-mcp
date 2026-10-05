@@ -7,6 +7,8 @@ import path from 'node:path';
 export const HOME = process.env.CANVAS_MCP_HOME || path.join(os.homedir(), '.canvas-session-mcp');
 export const PROFILE_DIR = process.env.CANVAS_MCP_PROFILE || path.join(HOME, 'browser-profile');
 const CONFIG_FILE = path.join(HOME, 'config.json');
+// What to tell people to run (the package is installed straight from GitHub, not from npm).
+export const CMD = 'npx -y https://github.com/CorCvusRamboChen/canvas-session-mcp/archive/refs/heads/main.tar.gz';
 export const DEFAULT_DOWNLOADS = path.join(os.homedir(), 'Documents', 'Canvas');
 
 // Where course files are saved: chosen during `setup`, or CANVAS_MCP_DOWNLOADS.
@@ -36,6 +38,6 @@ export function writeConfig(patch) {
 // CANVAS_URL (env) wins over the URL saved by `login`, so one install can point at another school.
 export function baseUrl() {
   const u = normalizeBaseUrl(process.env.CANVAS_URL || readConfig().baseUrl);
-  if (!u) throw new Error('No Canvas URL configured. Run: npx canvas-session-mcp login --url https://your-school.instructure.com');
+  if (!u) throw new Error(`No Canvas URL configured. Run: ${CMD} setup`);
   return u;
 }

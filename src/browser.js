@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright-core';
-import { PROFILE_DIR, HOME } from './config.js';
+import { PROFILE_DIR, HOME, CMD } from './config.js';
 
 // Canvas and most school SSOs use *session* cookies, which Chrome drops when the window
 // closes. So after a successful sign-in we keep the cookies ourselves (in your home folder,
@@ -124,14 +124,14 @@ let signInWindow = null;
 const SIGN_IN_HINT = 'A Canvas sign-in window is open. Sign in there, then ask again.';
 
 export async function renewSession(base, { loginPath, onLoginPath, hiddenWorks, onHiddenResult = () => {}, log = () => {}, waitMs = 40000 } = {}) {
-  if (!loadCookies().length) throw new Error('Not signed in to Canvas yet. Run: npx canvas-session-mcp setup');
+  if (!loadCookies().length) throw new Error(`Not signed in to Canvas yet. Run: ${CMD} setup`);
   if (signInWindow) return waitFor(signInWindow, waitMs);
   if (hiddenWorks !== false) {
     try { const s = await openSession(base, { headless: true, onLoginPath }); onHiddenResult(true); return s; }
     catch { onHiddenResult(false); }
   }
   if (process.env.CANVAS_MCP_RENEW === 'hidden') {
-    throw new Error('Your Canvas session has expired. Run: npx canvas-session-mcp login');
+    throw new Error(`Your Canvas session has expired. Run: ${CMD} login`);
   }
   log('Canvas session expired; opening a sign-in window…');
   signInWindow = openSession(base, { headless: false, startPath: loginPath || '/', timeoutMs: 600000, onLoginPath })
@@ -147,6 +147,6 @@ async function waitFor(win, ms) {
     return await Promise.race([win, late]);
   } catch (e) {
     if (e.message === SIGN_IN_HINT) throw e;
-    throw new Error(`Canvas sign-in was not completed (${e.message}). Run: npx canvas-session-mcp login`);
+    throw new Error(`Canvas sign-in was not completed (${e.message}). Run: ${CMD} login`);
   } finally { clearTimeout(timer); }
 }

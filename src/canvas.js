@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { HOME, downloadDir } from './config.js';
+import { HOME, downloadDir, CMD } from './config.js';
 
 const MAX_DOWNLOAD = 60 * 1024 * 1024;
 
@@ -63,7 +63,7 @@ export class CanvasClient {
       }
       return res;
     }
-    throw new Error('Canvas keeps answering 401. Run: npx canvas-session-mcp login');
+    throw new Error(`Canvas keeps answering 401. Run: ${CMD} login`);
   }
 
   url(p, params) {
