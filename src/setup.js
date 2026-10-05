@@ -2,6 +2,11 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+
+// npm and claude are .cmd shims on Windows, which Node only starts through a shell; a shell
+// takes one command line, so build it with every argument quoted.
+const q = (a) => (process.platform === 'win32' ? `"${String(a).replace(/"/g, '""')}"` : `'${String(a).replace(/'/g, "'\\''")}'`);
+const sh = (cmd, args, opts = {}) => spawnSync([cmd, ...args.map(q)].join(' '), { shell: true, stdio: 'ignore', ...opts });
 import { fileURLToPath } from 'node:url';
 import { HOME } from './config.js';
 
@@ -17,7 +22,7 @@ export function ensureStableInstall({ spec = process.env.CANVAS_MCP_SPEC || PACK
   const prefix = path.join(HOME, 'app');
   fs.mkdirSync(prefix, { recursive: true });
   log(`Installing a local copy in ${prefix} …`);
-  const r = spawnSync('npm', ['install', '--prefix', prefix, '--no-audit', '--no-fund', '--omit=dev', spec], { stdio: 'inherit', shell: process.platform === 'win32' });
+  const r = sh('npm', ['install', '--prefix', prefix, '--no-audit', '--no-fund', '--omit=dev', spec], { stdio: 'inherit' });
   if (r.status !== 0) throw new Error('npm install failed');
   return { command: process.execPath, args: [path.join(prefix, 'node_modules', 'canvas-session-mcp', 'bin', 'cli.js')] };
 }
@@ -50,7 +55,7 @@ export function upsertCodex(text, launch) {
   return (text && !text.endsWith('\n') ? text + '\n' : text) + (text.trim() ? '\n' : '') + block;
 }
 
-const onPath = (cmd) => spawnSync(cmd, ['--version'], { stdio: 'ignore', shell: process.platform === 'win32' }).status === 0;
+const onPath = (cmd) => sh(cmd, ['--version']).status === 0;
 
 // Every AI app we know how to configure: how to tell it is installed, and how to add the server.
 export function clients({ home = os.homedir(), env = process.env, platform = process.platform } = {}) {
@@ -68,10 +73,8 @@ export function clients({ home = os.homedir(), env = process.env, platform = pro
       id: 'claude-code', name: 'Claude Code',
       detect: () => onPath('claude'),
       install: (l) => {
-        const sh = { stdio: 'ignore', shell: platform === 'win32' };
-        spawnSync('claude', ['mcp', 'remove', '--scope', 'user', 'canvas'], sh);
-        const quote = (s) => (platform === 'win32' ? `"${s}"` : s);
-        const r = spawnSync('claude', ['mcp', 'add', '--scope', 'user', 'canvas', '--', quote(l.command), ...l.args.map(quote)], sh);
+        sh('claude', ['mcp', 'remove', '--scope', 'user', 'canvas']);
+        const r = sh('claude', ['mcp', 'add', '--scope', 'user', 'canvas', '--', l.command, ...l.args]);
         if (r.status !== 0) throw new Error('`claude mcp add` failed');
         return 'claude mcp (user scope)';
       },
